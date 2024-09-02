@@ -12,6 +12,7 @@
                    2019/08/14: 集成Gunicorn启动方式
                    2020/06/23: 新增pop接口
                    2022/07/21: 更新count接口
+                   2024/08/25: GET/POP/ALL接口添加中国区域判断
 -------------------------------------------------
 """
 __author__ = 'JHao'
@@ -59,14 +60,16 @@ def index():
 @app.route('/get/')
 def get():
     https = request.args.get("type", "").lower() == 'https'
-    proxy = proxy_handler.get(https)
+    getCountry = 'cn' in request.args
+    proxy = proxy_handler.get(https, getCountry)
     return proxy.to_dict if proxy else {"code": 0, "src": "no proxy"}
 
 
 @app.route('/pop/')
 def pop():
     https = request.args.get("type", "").lower() == 'https'
-    proxy = proxy_handler.pop(https)
+    getCountry = 'cn' in request.args
+    proxy = proxy_handler.pop(https, getCountry)
     return proxy.to_dict if proxy else {"code": 0, "src": "no proxy"}
 
 
@@ -79,7 +82,8 @@ def refresh():
 @app.route('/all/')
 def getAll():
     https = request.args.get("type", "").lower() == 'https'
-    proxies = proxy_handler.getAll(https)
+    getCountry = 'cn' in request.args
+    proxies = proxy_handler.getAll(https, getCountry)
     return jsonify([_.to_dict for _ in proxies])
 
 
@@ -93,6 +97,7 @@ def delete():
 @app.route('/count/')
 def getCount():
     proxies = proxy_handler.getAll()
+    cnproxies = proxy_handler.getAll(cn=True)
     http_type_dict = {}
     source_dict = {}
     for proxy in proxies:
@@ -100,7 +105,7 @@ def getCount():
         http_type_dict[http_type] = http_type_dict.get(http_type, 0) + 1
         for source in proxy.source.split('/'):
             source_dict[source] = source_dict.get(source, 0) + 1
-    return {"http_type": http_type_dict, "source": source_dict, "count": len(proxies)}
+    return {"http_type": http_type_dict, "source": source_dict, "count": len(proxies), "CN count": len(cnproxies)}
 
 
 def runFlask():

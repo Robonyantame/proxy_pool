@@ -10,6 +10,7 @@
                    2019/08/06: 执行代理校验
                    2021/05/25: 分别校验http和https
                    2022/08/16: 获取代理Region信息
+                   2024/08/25: 获取代理Country信息来判断是否为中国区域
 -------------------------------------------------
 """
 __author__ = 'JHao'
@@ -28,6 +29,7 @@ class DoValidator(object):
     """ 执行校验 """
 
     conf = ConfigHandler()
+    log = LogHandler("DoValidator")
 
     @classmethod
     def validator(cls, proxy, work_type):
@@ -41,7 +43,7 @@ class DoValidator(object):
         """
         http_r = cls.httpValidator(proxy)
         https_r = False if not http_r else cls.httpsValidator(proxy)
-
+        
         proxy.check_count += 1
         proxy.last_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         proxy.last_status = True if http_r else False
@@ -51,6 +53,8 @@ class DoValidator(object):
             proxy.https = True if https_r else False
             if work_type == "raw":
                 proxy.region = cls.regionGetter(proxy) if cls.conf.proxyRegion else ""
+                tempcountry = cls.countryGetter(proxy) if cls.conf.proxyRegion else ""
+                proxy.cn = tempcountry.lower() == "cn"
         else:
             proxy.fail_count += 1
         return proxy
@@ -82,6 +86,20 @@ class DoValidator(object):
             url = 'https://searchplugin.csdn.net/api/v1/ip/get?ip=%s' % proxy.proxy.split(':')[0]
             r = WebRequest().get(url=url, retry_time=1, timeout=2).json
             return r['data']['address']
+        except:
+            return 'error'
+
+    '''
+    @todo: 原本想用ipip.net的api, 才发现api是付费的, 所以使用了ip.sb, 但是我不知道在中国大陆环境是否可用, 可能需要更换
+    如果你的网络状态出现了异常情况导致无法使用ip.sb，可以参考这个帖子对下面代码进行更改: https://gitcode.csdn.net/65e7d6a41a836825ed789ffc.html
+    因为是刚需所以懒得改了 :P
+    '''    
+    @classmethod
+    def countryGetter(cls, proxy):
+        try:
+            url = 'https://api.ip.sb/geoip/%s' % proxy.proxy.split(':')[0]
+            r = WebRequest().get(url=url, retry_time=1, timeout=2).json
+            return r['country_code']
         except:
             return 'error'
 

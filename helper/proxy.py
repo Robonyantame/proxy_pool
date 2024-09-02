@@ -17,11 +17,12 @@ import json
 
 class Proxy(object):
 
-    def __init__(self, proxy, fail_count=0, region="", anonymous="",
+    def __init__(self, proxy, fail_count=0, region="", cn = False, anonymous="",
                  source="", check_count=0, last_status="", last_time="", https=False):
         self._proxy = proxy
         self._fail_count = fail_count
         self._region = region
+        self._cn = cn
         self._anonymous = anonymous
         self._source = source.split('/')
         self._check_count = check_count
@@ -35,6 +36,7 @@ class Proxy(object):
         return cls(proxy=_dict.get("proxy", ""),
                    fail_count=_dict.get("fail_count", 0),
                    region=_dict.get("region", ""),
+                   cn=_dict.get("cn", False),
                    anonymous=_dict.get("anonymous", ""),
                    source=_dict.get("source", ""),
                    check_count=_dict.get("check_count", 0),
@@ -57,6 +59,11 @@ class Proxy(object):
     def region(self):
         """ 地理位置(国家/城市) """
         return self._region
+    
+    @property
+    def cn(self):
+        """ 国家代码 """
+        return self._cn
 
     @property
     def anonymous(self):
@@ -95,6 +102,7 @@ class Proxy(object):
                 "https": self.https,
                 "fail_count": self.fail_count,
                 "region": self.region,
+                "cn": self.cn,
                 "anonymous": self.anonymous,
                 "source": self.source,
                 "check_count": self.check_count,
@@ -129,6 +137,10 @@ class Proxy(object):
     @region.setter
     def region(self, value):
         self._region = value
+
+    @cn.setter
+    def cn(self, value):
+        self._cn = value 
 
     def add_source(self, source_str):
         if source_str:

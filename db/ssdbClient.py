@@ -8,11 +8,12 @@
    date：          2016/12/2
 -------------------------------------------------
    Change Activity:
-                   2016/12/2:
-                   2017/09/22: PY3中 redis-py返回的数据是bytes型
-                   2017/09/27: 修改pop()方法 返回{proxy:value}字典
-                   2020/07/03: 2.1.0 优化代码结构
-                   2021/05/26: 区分http和https代理
+                    2016/12/2:
+                    2017/09/22: PY3中 redis-py返回的数据是bytes型
+                    2017/09/27: 修改pop()方法 返回{proxy:value}字典
+                    2020/07/03: 2.1.0 优化代码结构
+                    2021/05/26: 区分http和https代理
+                    2024/08/25: 区别是否为中国ip
 -------------------------------------------------
 """
 __author__ = 'JHao'
@@ -47,19 +48,30 @@ class SsdbClient(object):
                                                                    socket_timeout=5,
                                                                    **kwargs))
 
-    def get(self, https):
+    def get(self, https, cn):
         """
         从hash中随机返回一个代理
         :return:
         """
-        if https:
-            items_dict = self.__conn.hgetall(self.name)
-            proxies = list(filter(lambda x: json.loads(x).get("https"), items_dict.values()))
-            return choice(proxies) if proxies else None
-        else:
+        if not https and not cn:
             proxies = self.__conn.hkeys(self.name)
             proxy = choice(proxies) if proxies else None
             return self.__conn.hget(self.name, proxy) if proxy else None
+
+        items_dict = self.__conn.hgetall(self.name)
+        proxies = None
+
+        if https:
+            proxies = list(filter(lambda x: json.loads(x).get("https"), items_dict.values()))
+
+        if cn:
+            proxies = list(filter(lambda x: json.loads(x).get("cn"), items_dict.values()))
+            
+        if proxies:
+            return choice(proxies)
+        
+        return None
+
 
     def put(self, proxy_obj):
         """
@@ -70,12 +82,12 @@ class SsdbClient(object):
         result = self.__conn.hset(self.name, proxy_obj.proxy, proxy_obj.to_json)
         return result
 
-    def pop(self, https):
+    def pop(self, https, cn):
         """
         顺序弹出一个代理
         :return: proxy
         """
-        proxy = self.get(https)
+        proxy = self.get(https, cn)
         if proxy:
             self.__conn.hdel(self.name, json.loads(proxy).get("proxy", ""))
         return proxy if proxy else None
@@ -104,16 +116,29 @@ class SsdbClient(object):
         """
         self.__conn.hset(self.name, proxy_obj.proxy, proxy_obj.to_json)
 
-    def getAll(self, https):
+    def getAll(self, https, cn):
         """
         字典形式返回所有代理, 使用changeTable指定hash name
         :return:
         """
         item_dict = self.__conn.hgetall(self.name)
-        if https:
-            return list(filter(lambda x: json.loads(x).get("https"), item_dict.values()))
-        else:
+
+        if not https and not cn:
             return item_dict.values()
+
+        proxies = None
+
+        if https:
+            proxies = list(filter(lambda x: json.loads(x).get("https"), item_dict.values()))
+        
+        if cn:
+            proxies = list(filter(lambda x: json.loads(x).get("cn"), item_dict.values()))
+    
+        if proxies:
+            return proxies
+        
+        return None
+            
 
     def clear(self):
         """
@@ -127,8 +152,8 @@ class SsdbClient(object):
         返回代理数量
         :return:
         """
-        proxies = self.getAll(https=False)
-        return {'total': len(proxies), 'https': len(list(filter(lambda x: json.loads(x).get("https"), proxies)))}
+        proxies = self.getAll(https=False, cn=False)
+        return {'total': len(proxies), 'https': len(list(filter(lambda x: json.loads(x).get("https"), proxies))), 'cn proxy': len(list(filter(lambda x: json.loads(x).get("cn"), proxies)))}
 
     def changeTable(self, name):
         """
