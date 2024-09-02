@@ -262,7 +262,6 @@ class ProxyFetcher(object):
         '''
         urls = ['https://www.freeproxy.world/?type=http&anonymity=&country=&speed=&port=&page=%s' % n for n in range(1, 90)]
         for url in urls:
-            print(url)
             r = WebRequest().get(url, timeout=10)
             proxies = re.findall(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s*</td>\s*<td>\s*<a href=\"/\?port=\d+\">(\d+)</a>', r.text)
             yield from [':'.join(proxy) for proxy in proxies]
