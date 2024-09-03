@@ -271,7 +271,7 @@ class ProxyFetcher(object):
     def freeProxy19():
         url = 'https://free-proxy-list.net/'
         r = WebRequest().get(url, timeout=10)
-        proxies = re.findall(r'<td data-title="IP Address">(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})</td><td data-title="Port">(\d+)</td>', r.text)
+        proxies = re.findall(r'<td>(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})</td><td>(\d+)</td>', r.text)
         yield from [':'.join(proxy) for proxy in proxies]
 
     @staticmethod
