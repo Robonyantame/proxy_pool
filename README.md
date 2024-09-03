@@ -34,13 +34,9 @@ ProxyPool 爬虫代理IP池
 
 ---
 
-* 文档: [document](https://proxy-pool.readthedocs.io/zh/latest/) [![Documentation Status](https://readthedocs.org/projects/proxy-pool/badge/?version=latest)](https://proxy-pool.readthedocs.io/zh/latest/?badge=latest)
+* 文档: [document](jhao104.github.io/proxy_pool/)
 
-* 支持版本: [![](https://img.shields.io/badge/Python-2.7-green.svg)](https://docs.python.org/2.7/)
-[![](https://img.shields.io/badge/Python-3.5-blue.svg)](https://docs.python.org/3.5/)
-[![](https://img.shields.io/badge/Python-3.6-blue.svg)](https://docs.python.org/3.6/)
-[![](https://img.shields.io/badge/Python-3.7-blue.svg)](https://docs.python.org/3.7/)
-[![](https://img.shields.io/badge/Python-3.8-blue.svg)](https://docs.python.org/3.8/)
+* 支持版本: [![](https://img.shields.io/badge/Python-3.8-blue.svg)](https://docs.python.org/3.8/)
 [![](https://img.shields.io/badge/Python-3.9-blue.svg)](https://docs.python.org/3.9/)
 [![](https://img.shields.io/badge/Python-3.10-blue.svg)](https://docs.python.org/3.10/)
 [![](https://img.shields.io/badge/Python-3.11-blue.svg)](https://docs.python.org/3.11/)
